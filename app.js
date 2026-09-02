@@ -1,102 +1,379 @@
-const QUESTIONS = [
- "最近最喜歡你怎麼叫我？",
- "最近最喜歡的食物？",
- "最近最討厭的食物？",
- "最近最喜歡的歌？",
- "最近喜歡做的事情？",
- "最近沉迷的東西？"
+const SECTIONS=[
+  {title:"💗 關於我",qs:[
+    "最近半年都叫我什麼？",
+    "最近半年我喜歡吃什麼？",
+    "喜歡這半年我什麼樣子？",
+    "喜歡這半年我唱什麼歌？",
+    "最近有沒有覺得我沈迷什麼東西？",
+    "這半年我喜歡的是什麼？",
+    "最近最喜歡我哪個小習慣？",
+    "最近覺得我最可愛的瞬間？",
+    "最近有沒有哪件事讓你覺得我很帥／很漂亮？",
+    "這一年生日，想怎麼過？"
+  ]},
+  {title:"🐾 關於我們",qs:[
+    "這半年最難忘的回憶？",
+    "最近最喜歡我們一起做什麼？",
+    "如果今天重新第一次約會，你想帶我去哪？",
+    "你覺得我們最近變得更好的地方？",
+    "如果有重新認識，你還會想了解我嗎？",
+    "為什麼？",
+    "有沒有一個瞬間，你會後悔／堅決覺得選擇是對的？"
+  ]},
+  {title:"💌 心裡話",qs:[
+    "最近有沒有什麼一直想跟我說？",
+    "最近有什麼事情希望我更懂你？",
+    "你希望我怎麼陪你？",
+    "有沒有一句話想送給半年前的我們？",
+    "有沒有什麼事情你覺得對不起對方？"
+  ]},
+  {title:"🔮 下一個半年",qs:[
+    "下半年最想跟我一起完成什麼？",
+    "最想一起去什麼地方？",
+    "希望半年後的我們變成什麼樣子？",
+    "希望未來我們怎麼努力？"
+  ]},
+  {title:"✨ 有話對我說",qs:[
+    "可以跟我說說，你希望我改進的事，以及你覺得我不需要改變、希望我繼續保持的事。"
+  ]}
 ];
-const MAX=25;
-const $=s=>document.querySelector(s);
-const screens={home:$("#home"),quiz:$("#quiz"),handoff:$("#handoff"),result:$("#result")};
-let answers=Array(QUESTIONS.length).fill("");
-let idx=0, person="A", partnerAnswers=null, inviteData=null;
 
-function show(name){Object.values(screens).forEach(x=>x.classList.remove("active"));screens[name].classList.add("active");window.scrollTo({top:0,behavior:"smooth"})}
-function toast(t){const el=$("#toast");el.textContent=t;el.classList.add("show");setTimeout(()=>el.classList.remove("show"),1800)}
+const QUESTIONS=SECTIONS.flatMap(s=>s.qs);
+const MAX=100;
+let person="A",idx=0,answers=[];
+
+const $=id=>document.getElementById(id);
+
+function show(id){
+  ["home","quiz","handoff","result"].forEach(x=>{
+    $(x).classList.toggle("hidden",x!==id);
+  });
+}
+
+function toast(t){
+  $("toast").textContent=t;
+  $("toast").classList.remove("hidden");
+  setTimeout(()=>$("toast").classList.add("hidden"),1800);
+}
+
+function sectionOf(i){
+  let n=0;
+  for(const s of SECTIONS){
+    if(i<n+s.qs.length)return s;
+    n+=s.qs.length;
+  }
+  return SECTIONS[SECTIONS.length-1];
+}
+
 function renderQuestions(){
-  $("#questions").innerHTML=QUESTIONS.map((q,i)=>`
-    <article class="question-card">
-      <div class="question-title"><span class="num">${i+1}</span>${q}</div>
-      <textarea class="answer" maxlength="${MAX}" data-i="${i}" placeholder="點這裡輸入……">${escapeHtml(answers[i])}</textarea>
-      <div class="counter"><span id="c${i}">${answers[i].length}</span> / ${MAX}</div>
-    </article>`).join("");
-  document.querySelectorAll(".answer").forEach(el=>el.addEventListener("input",e=>{
-    const i=+e.target.dataset.i; answers[i]=e.target.value;
-    $("#c"+i).textContent=answers[i].length; localStorage.setItem("coupleA",JSON.stringify(answers));
-  }));
-}
-function escapeHtml(s){return s.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;")}
-function updateQuiz(){
-  $("#personLabel").textContent=person==="A"?"我的回答":"另一半的回答";
-  $("#progressText").textContent=`${idx+1} / ${QUESTIONS.length}`;
-  $("#pageDot").textContent=`${idx+1} / ${QUESTIONS.length}`;
-  document.querySelectorAll(".question-card").forEach((el,i)=>el.style.display=i===idx?"block":"none");
-  $("#prevBtn").disabled=idx===0;
-  $("#prevBtn").style.opacity=idx===0?".5":"1";
-  $("#nextBtn").textContent=idx===QUESTIONS.length-1?"完成回答 ♡":"下一題 →";
-}
-function startA(){
-  ;renderQuestions();updateQuiz();show("quiz");
-}
-function startB(data){
-  person="B";inviteData=data;idx=0;answers=Array(QUESTIONS.length).fill("");
-  renderQuestions();updateQuiz();show("quiz");
-}
-$("#startBtn").onclick=startA;
-$("#backHome").onclick=()=>show("home");
-$("#saveBtn").onclick=()=>{localStorage.setItem("coupleA",JSON.stringify(answers));toast("已儲存到這支手機 ♡")};
-$("#prevBtn").onclick=()=>{if(idx>0){idx--;updateQuiz()}};
-$("#nextBtn").onclick=()=>{
-  if(idx<QUESTIONS.length-1){idx++;updateQuiz();return}
-  if(person==="A")makeInvite(); else makeResult(inviteData,answers);
-};
-function makeInvite(){
-  const payload={q:answers,created:new Date().toISOString()};
-  const encoded=btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
-  const url=location.origin+location.pathname+"#invite="+encoded;
-  $("#shareLink").value=url;
-  localStorage.setItem("coupleA",JSON.stringify(answers));
-  show("handoff");
-}
-$("#copyLink").onclick=async()=>{try{await navigator.clipboard.writeText($("#shareLink").value);toast("邀請連結已複製 ♡")}catch(e){$("#shareLink").select();document.execCommand("copy");toast("邀請連結已複製 ♡")}};
-$("#shareNative").onclick=async()=>{
- const data={title:"給半年的我們 ♡",text:"來回答我們的半年重新認識問卷吧！",url:$("#shareLink").value};
- if(navigator.share){try{await navigator.share(data)}catch(e){}}else toast("這支手機不支援快速分享");
-};
-function makeResult(data,b){
-  partnerAnswers=data.q||[];
-  $("#resultRows").innerHTML=QUESTIONS.map((q,i)=>`
-    <div class="result-row">
-      <div class="result-q">${i+1}. ${q}</div>
-      <div class="result-answers">
-        <div class="answer-col"><small>♡ 我的回答</small>${escapeHtml(partnerAnswers[i]||"（沒有回答）")}</div>
-        <div class="answer-col"><small>🐾 另一半的回答</small>${escapeHtml(b[i]||"（沒有回答）")}</div>
+  const box=$("questions");
+  const s=sectionOf(idx);
+
+  box.innerHTML=`
+    <div class="section-title">${s.title}</div>
+    <div class="q-card">
+      <div class="q-num">第 ${idx+1} / ${QUESTIONS.length} 題</div>
+      <div class="q-text">${QUESTIONS[idx]}</div>
+      <textarea id="answer" maxlength="${MAX}" placeholder="寫下你的答案…">${answers[idx]||""}</textarea>
+      <div class="char-count">
+        <span id="count">${(answers[idx]||"").length}</span> / ${MAX}
       </div>
-    </div>`).join("");
+    </div>
+  `;
+
+  $("answer").addEventListener("input",e=>{
+    answers[idx]=e.target.value;
+    $("count").textContent=e.target.value.length;
+    localStorage.setItem("couple"+person,JSON.stringify(answers));
+  });
+}
+
+function updateQuiz(){
+  $("personLabel").textContent=
+    person==="A"?"💗 A 的回答":"💙 B 的回答";
+
+  $("progressText").textContent=
+    `${idx+1} / ${QUESTIONS.length}`;
+
+  $("pageDot").textContent=`${idx+1}`;
+
+  $("prevBtn").disabled=idx===0;
+
+  $("nextBtn").textContent=
+    idx===QUESTIONS.length-1?"完成":"下一題";
+}
+
+function startA(){
+  person="A";
+  idx=0;
+
+  answers=JSON.parse(
+    localStorage.getItem("coupleA")||"[]"
+  );
+
+  if(answers.length!==QUESTIONS.length){
+    answers=Array(QUESTIONS.length).fill("");
+  }
+
+  renderQuestions();
+  updateQuiz();
+  show("quiz");
+}
+
+function makeInvite(){
+  const data=btoa(
+    unescape(
+      encodeURIComponent(
+        JSON.stringify({a:answers})
+      )
+    )
+  );
+
+  return location.href.split("#")[0]+"#invite="+data;
+}
+
+function startB(){
+  const raw=location.hash.split("invite=")[1];
+
+  if(!raw){
+    toast("找不到邀請資料");
+    return;
+  }
+
+  try{
+    const d=JSON.parse(
+      decodeURIComponent(
+        escape(atob(raw))
+      )
+    );
+
+    localStorage.setItem(
+      "coupleInviteA",
+      JSON.stringify(d.a||[])
+    );
+
+    person="B";
+    idx=0;
+    answers=Array(QUESTIONS.length).fill("");
+
+    renderQuestions();
+    updateQuiz();
+    show("quiz");
+
+  }catch(e){
+    toast("邀請資料無法讀取");
+  }
+}
+
+function finish(){
+  localStorage.setItem(
+    "couple"+person,
+    JSON.stringify(answers)
+  );
+
+  if(person==="A"){
+    $("shareLink").value=makeInvite();
+    show("handoff");
+  }else{
+    renderResult();
+  }
+}
+
+function escapeHtml(s){
+  return String(s).replace(
+    /[&<>"']/g,
+    m=>({
+      "&":"&amp;",
+      "<":"&lt;",
+      ">":"&gt;",
+      '"':"&quot;",
+      "'":"&#039;"
+    }[m])
+  );
+}
+
+function renderResult(){
+  const a=JSON.parse(
+    localStorage.getItem("coupleInviteA")||"[]"
+  );
+
+  const b=answers;
+  let html="";
+  let n=0;
+
+  for(const s of SECTIONS){
+
+    html+=`
+      <div class="section-title">${s.title}</div>
+    `;
+
+    for(const q of s.qs){
+
+      html+=`
+        <div class="result-q">
+          <div class="q-text">${q}</div>
+
+          <div class="answer-row">
+            <b>💗 A</b>
+            <p>${escapeHtml(a[n]||"尚未回答")}</p>
+          </div>
+
+          <div class="answer-row">
+            <b>💙 B</b>
+            <p>${escapeHtml(b[n]||"尚未回答")}</p>
+          </div>
+        </div>
+      `;
+
+      n++;
+    }
+  }
+
+  $("resultRows").innerHTML=html;
   show("result");
 }
-$("#imageBtn").onclick=async()=>{
-  const card=$("#resultCard");toast("正在生成長圖…");
-  if(!window.html2canvas){toast("請確認網路連線後再試");return}
-  try{
-    const canvas=await html2canvas(card,{scale:2,backgroundColor:"#fbf6ed",useCORS:true});
-    const a=document.createElement("a");a.download="我們的半年回憶.png";a.href=canvas.toDataURL("image/png");a.click();toast("長圖完成 ♡");
-  }catch(e){toast("生成失敗，請再試一次")}
-};
-$("#againBtn").onclick=()=>{location.hash="";startA()};
-$("#loadBtn").onclick=()=>{
- const saved=localStorage.getItem("coupleA");
- if(saved){answers=JSON.parse(saved);toast("已載入上次的回答 ♡");startA()}else toast("目前還沒有儲存的回答");
+
+$("startBtn").onclick=startA;
+
+$("nextBtn").onclick=()=>{
+  if($("answer")){
+    answers[idx]=$("answer").value;
+  }
+
+  if(idx<QUESTIONS.length-1){
+    idx++;
+    renderQuestions();
+    updateQuiz();
+  }else{
+    finish();
+  }
 };
 
-function decodeInvite(){
- const m=location.hash.match(/^#invite=(.+)$/);
- if(!m)return;
- try{
-   const data=JSON.parse(decodeURIComponent(escape(atob(m[1]))));
-   if(Array.isArray(data.q)){startB(data);return true}
- }catch(e){}
- return false;
+$("prevBtn").onclick=()=>{
+  if(idx>0){
+
+    if($("answer")){
+      answers[idx]=$("answer").value;
+    }
+
+    idx--;
+    renderQuestions();
+    updateQuiz();
+  }
+};
+
+$("backHome").onclick=()=>{
+  show("home");
+};
+
+$("copyLink").onclick=async()=>{
+  try{
+    await navigator.clipboard.writeText(
+      $("shareLink").value
+    );
+
+    toast("已複製邀請連結 💌");
+
+  }catch(e){
+    toast("請長按連結複製");
+  }
+};
+
+$("shareNative").onclick=async()=>{
+  if(navigator.share){
+    await navigator.share({
+      title:"情侶半年重新認識",
+      url:$("shareLink").value
+    });
+  }else{
+    toast("請使用複製連結");
+  }
+};
+
+$("imageBtn").onclick=async()=>{
+
+  const card=$("resultCard");
+
+  if(typeof html2canvas==="undefined"){
+    toast("圖片功能需要網路連線");
+    return;
+  }
+
+  const canvas=await html2canvas(card,{
+    scale:2,
+    backgroundColor:"#fffaf4"
+  });
+
+  canvas.toBlob(async blob=>{
+
+    const file=new File(
+      [blob],
+      "情侶半年重新認識.png",
+      {type:"image/png"}
+    );
+
+    if(
+      navigator.share &&
+      navigator.canShare &&
+      navigator.canShare({files:[file]})
+    ){
+
+      try{
+        await navigator.share({
+          files:[file],
+          title:"情侶半年重新認識"
+        });
+      }catch(e){}
+
+    }else{
+
+      const a=document.createElement("a");
+      a.href=URL.createObjectURL(blob);
+      a.download=file.name;
+      a.click();
+
+      toast("圖片已產生");
+    }
+
+  });
+};
+
+$("againBtn").onclick=()=>{
+  person="A";
+  idx=0;
+  answers=Array(QUESTIONS.length).fill("");
+
+  renderQuestions();
+  updateQuiz();
+  show("quiz");
+};
+
+$("loadBtn").onclick=()=>{
+
+  const a=JSON.parse(
+    localStorage.getItem("coupleA")||"[]"
+  );
+
+  if(!a.length){
+    toast("目前沒有儲存的回答");
+    return;
+  }
+
+  person="A";
+  idx=0;
+
+  answers=
+    a.length===QUESTIONS.length
+    ?a
+    :Array(QUESTIONS.length).fill("");
+
+  renderQuestions();
+  updateQuiz();
+  show("quiz");
+};
+
+if(location.hash.startsWith("#invite=")){
+  setTimeout(()=>{
+    startB();
+  },100);
 }
-renderQuestions();updateQuiz();decodeInvite();
