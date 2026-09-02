@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f8f2e9">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>給半年的我們 ♡</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="bg-paw paw-a">🐾</div><div class="bg-paw paw-b">🐾</div>
+  <main id="app" class="app-shell">
+
+    <section id="home" class="screen active">
+      <header class="topbar">
+        <div class="tiny-brand">OUR LITTLE MEMORY</div>
+        <button class="ghost-btn" id="loadBtn">♡ 我的回憶</button>
+      </header>
+
+      <div class="hero">
+        <div class="pet pet-cat" aria-hidden="true">
+          <div class="ear e1"></div><div class="ear e2"></div><div class="head">🐱</div>
+        </div>
+        <div class="pet pet-dog" aria-hidden="true">🐶</div>
+        <div class="memory-pill">OUR LITTLE MEMORY</div>
+        <h1>♡ 給半年的我們 ♡</h1>
+        <p>一起把現在的我們，好好收藏起來。</p>
+        <div class="sparkles">✦　♡　✦　♡　✦</div>
+      </div>
+
+      <div class="home-card">
+        <div class="note">Good Things<br>With You ♡</div>
+        <div>
+          <h2>半年一次，重新認識彼此。</h2>
+          <p>這不是考試，也沒有標準答案。<br>只是想知道，現在的你，正在喜歡什麼。</p>
+        </div>
+      </div>
+
+      <div class="feature-grid">
+        <div>🐾<b> 兩人回答</b><span>先後回答、不偷看</span></div>
+        <div>💌<b> 自動合併</b><span>完成後看彼此答案</span></div>
+        <div>🖼️<b> 生成長圖</b><span>直接存到手機</span></div>
+        <div>☁️<b> 不用安裝</b><span>Safari 直接開</span></div>
+      </div>
+
+      <button class="primary-btn big" id="startBtn">♡ 開始重新認識</button>
+      <p class="small-tip">適合每半年打開一次的小小儀式。</p>
+    </section>
+
+    <section id="quiz" class="screen">
+      <header class="quiz-top">
+        <button class="icon-btn" id="backHome">←</button>
+        <div><span id="personLabel">我的回答</span><small id="progressText">1 / 6</small></div>
+        <button class="icon-btn" id="saveBtn">♡</button>
+      </header>
+
+      <div class="section-title"><span>🐾</span> 01｜最近的我 <span>♡</span></div>
+      <div id="questions"></div>
+
+      <div class="quiz-nav">
+        <button class="secondary-btn" id="prevBtn">← 上一題</button>
+        <span id="pageDot">1 / 6</span>
+        <button class="primary-btn" id="nextBtn">下一題 →</button>
+      </div>
+    </section>
+
+    <section id="handoff" class="screen">
+      <div class="result-hero">
+        <div class="pet-row">🐱　♡　🐶</div>
+        <div class="memory-pill">ONE LITTLE MEMORY</div>
+        <h1>♡ 第一份回答完成 ♡</h1>
+        <p>把這份小小的邀請交給另一半，<br>等他／她也回答完，就能一起揭曉。</p>
+      </div>
+      <div class="link-card">
+        <label>給另一半的專屬連結</label>
+        <textarea id="shareLink" readonly></textarea>
+        <button class="primary-btn" id="copyLink">♡ 複製邀請連結</button>
+        <button class="secondary-btn" id="shareNative">用 iPhone 分享</button>
+      </div>
+      <p class="privacy-tip">答案會編碼在邀請連結裡；這個版本不需要伺服器，也不會把答案上傳到網站。</p>
+    </section>
+
+    <section id="result" class="screen">
+      <div class="result-page" id="resultCard">
+        <div class="result-pets">🐱　♡　🐶</div>
+        <div class="memory-pill">OUR LITTLE MEMORY</div>
+        <h1>♡ 半年後的我們 ♡</h1>
+        <p class="result-sub">原來半年裡，我們都偷偷變了一點點。</p>
+        <div id="resultRows"></div>
+        <div class="result-footer">♡ 一起記錄我們的每個瞬間 ♡<br><small>ME & YOU · FOREVER</small></div>
+      </div>
+      <div class="result-actions">
+        <button class="primary-btn big" id="imageBtn">🖼️ 一鍵生成手機長圖</button>
+        <button class="secondary-btn" id="againBtn">♡ 再回答一次</button>
+      </div>
+      <p class="small-tip">長圖會依照目前畫面產生，適合直接存到 iPhone 相簿。</p>
+    </section>
+  </main>
+
+  <div id="toast" class="toast"></div>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
