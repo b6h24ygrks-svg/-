@@ -37,8 +37,7 @@ function updateQuiz(){
   $("#nextBtn").textContent=idx===QUESTIONS.length-1?"完成回答 ♡":"下一題 →";
 }
 function startA(){
-  person="A";idx=0;answers=JSON.parse(localStorage.getItem("coupleA")||"[]");if(answers.length!==QUESTIONS.length)answers=Array(QUESTIONS.length).fill("");
-  $("#section").textContent="";renderQuestions();updateQuiz();show("quiz");
+  ;renderQuestions();updateQuiz();show("quiz");
 }
 function startB(data){
   person="B";inviteData=data;idx=0;answers=Array(QUESTIONS.length).fill("");
