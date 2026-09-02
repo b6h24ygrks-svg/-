@@ -42,14 +42,11 @@ const QUESTIONS=SECTIONS.flatMap(s=>s.qs);
 const MAX=100;
 let person="A",idx=0,answers=[];
 
-const $=id=>document.getElementById(id);
-
 function show(id){
   ["home","quiz","handoff","result"].forEach(x=>{
-    $(x).classList.toggle("hidden",x!==id);
+    $(x).classList.toggle("active",x===id);
   });
 }
-
 function toast(t){
   $("toast").textContent=t;
   $("toast").classList.remove("hidden");
