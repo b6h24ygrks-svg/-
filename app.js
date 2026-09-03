@@ -428,7 +428,7 @@ $("loadBtn").onclick=()=>{
   show("quiz");
 };
 
-if(location.hash.startsWith("#invite=")){
+if(location.hash.startsWith("#room=")){
   setTimeout(()=>{
     startB();
   },100);
