@@ -1,3 +1,6 @@
+const SUPABASE_URL = "https://wpdlcnniaukqqiepvwnt.supabase.co";
+const SUPABASE_KEY = "sb_publishable_2b-gDkZYM8RgtWk8xnu0Jw_pJ0JWzM_;
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const SECTIONS=[
   {title:"💗 關於我",qs:[
     "最近半年都叫我什麼？",
