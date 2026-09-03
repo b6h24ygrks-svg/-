@@ -125,7 +125,7 @@ function updateQuiz(){
     idx===QUESTIONS.length-1?"完成":"下一題";
 }
 
-function startA(){
+async function startA(){
   person="A";
   idx=0;
 
@@ -136,6 +136,40 @@ function startA(){
   if(answers.length!==QUESTIONS.length){
     answers=Array(QUESTIONS.length).fill("");
   }
+
+  if(!currentUser){
+    await initAuth();
+  }
+
+  if(!currentUser){
+    toast("連線失敗，請重新整理");
+    return;
+  }
+
+  const code=crypto.randomUUID()
+    .replace(/-/g,"")
+    .slice(0,10)
+    .toUpperCase();
+
+  const {data,error}=await db
+    .from("sessions")
+    .insert({
+      code:code,
+      title:"給半年的我們",
+      a_answers:answers,
+      a_user_id:currentUser.id
+    })
+    .select("id,code")
+    .single();
+
+  if(error){
+    console.error(error);
+    toast("建立房間失敗");
+    return;
+  }
+
+  localStorage.setItem("sessionId",data.id);
+  localStorage.setItem("sessionCode",data.code);
 
   renderQuestions();
   updateQuiz();
