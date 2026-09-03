@@ -1,3 +1,28 @@
+const SUPABASE_URL = "https://wpdlcnniaukqqiepvwnt.supabase.co";
+const SUPABASE_KEY = "sb_publishable_2b-gDkZYM8RgtWk8xnu0Jw_pJ0JWzM_;
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let currentUser = null;
+
+async function initAuth(){
+  const { data: { session } } = await db.auth.getSession();
+
+  if(session){
+    currentUser = session.user;
+    return;
+  }
+
+  const { data, error } = await db.auth.signInAnonymously();
+
+  if(error){
+    console.error(error);
+    toast("連線失敗，請重新整理");
+    return;
+  }
+
+  currentUser = data.user;
+}
+
+initAuth();
 const SECTIONS=[
   {title:"💗 關於我",qs:[
     "最近半年都叫我什麼？",
@@ -100,7 +125,7 @@ function updateQuiz(){
     idx===QUESTIONS.length-1?"完成":"下一題";
 }
 
-function startA(){
+async function startA(){
   person="A";
   idx=0;
 
@@ -111,6 +136,40 @@ function startA(){
   if(answers.length!==QUESTIONS.length){
     answers=Array(QUESTIONS.length).fill("");
   }
+
+  if(!currentUser){
+    await initAuth();
+  }
+
+  if(!currentUser){
+    toast("連線失敗，請重新整理");
+    return;
+  }
+
+  const code=crypto.randomUUID()
+    .replace(/-/g,"")
+    .slice(0,10)
+    .toUpperCase();
+
+  const {data,error}=await db
+    .from("sessions")
+    .insert({
+      code:code,
+      title:"給半年的我們",
+      a_answers:answers,
+      a_user_id:currentUser.id
+    })
+    .select("id,code")
+    .single();
+
+  if(error){
+    console.error(error);
+    toast("建立房間失敗");
+    return;
+  }
+
+  localStorage.setItem("sessionId",data.id);
+  localStorage.setItem("sessionCode",data.code);
 
   renderQuestions();
   updateQuiz();
@@ -369,7 +428,7 @@ $("loadBtn").onclick=()=>{
   show("quiz");
 };
 
-if(location.hash.startsWith("#invite=")){
+if(location.hash.startsWith("#room=")){
   setTimeout(()=>{
     startB();
   },100);
